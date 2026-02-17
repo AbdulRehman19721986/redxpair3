@@ -1,0 +1,160 @@
+/* public/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Share Tech Mono', monospace;
+  background: #0a0a0a;
+  color: #0f0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 800px;
+  width: 90%;
+  padding: 2rem;
+  border: 2px solid #f00;
+  box-shadow: 0 0 20px #f00, inset 0 0 10px #f00;
+  background: rgba(0,0,0,0.9);
+  text-align: center;
+  position: relative;
+}
+
+.glitch {
+  font-size: 3rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0.05em 0 0 #f00, -0.05em -0.025em 0 #0ff;
+  animation: glitch 725ms infinite;
+}
+
+@keyframes glitch {
+  0%, 100% { text-shadow: 0.05em 0 0 #f00, -0.05em -0.025em 0 #0ff; }
+  25% { text-shadow: -0.05em -0.025em 0 #f00, 0.025em 0.025em 0 #0ff; }
+  50% { text-shadow: 0.025em 0.05em 0 #f00, -0.05em -0.05em 0 #0ff; }
+  75% { text-shadow: -0.025em 0 0 #f00, 0.025em -0.025em 0 #0ff; }
+}
+
+.subtitle {
+  color: #f00;
+  margin: 1rem 0 2rem;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  border-bottom: 1px dashed #f00;
+  padding-bottom: 0.5rem;
+}
+
+.card {
+  background: #111;
+  border: 1px solid #f00;
+  padding: 2rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 0 15px rgba(255,0,0,0.5);
+}
+
+.input-group {
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #f00;
+  font-size: 1.1rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 1rem;
+  background: #000;
+  border: 2px solid #f00;
+  color: #0f0;
+  font-family: inherit;
+  font-size: 1.2rem;
+  outline: none;
+  transition: 0.3s;
+}
+
+.input-group input:focus {
+  box-shadow: 0 0 10px #f00;
+}
+
+.btn {
+  background: #000;
+  color: #f00;
+  border: 2px solid #f00;
+  padding: 1rem 2rem;
+  font-family: inherit;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: 0.3s;
+  margin: 0.5rem;
+  box-shadow: 0 0 10px #f00;
+}
+
+.btn:hover {
+  background: #f00;
+  color: #000;
+  box-shadow: 0 0 20px #f00;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.qr-container {
+  background: #fff;
+  padding: 1rem;
+  display: inline-block;
+  margin: 1rem 0;
+  border: 3px solid #f00;
+}
+
+.code-box {
+  background: #000;
+  border: 2px solid #f00;
+  padding: 1rem;
+  font-size: 2rem;
+  letter-spacing: 5px;
+  color: #0f0;
+  margin: 1rem 0;
+  word-break: break-all;
+}
+
+.instructions {
+  text-align: left;
+  background: #111;
+  padding: 1.5rem;
+  border-left: 4px solid #f00;
+  margin: 2rem 0;
+}
+
+.instructions p {
+  margin: 0.5rem 0;
+  color: #ccc;
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  margin-top: 2rem;
+  color: #666;
+  font-size: 0.9rem;
+  border-top: 1px solid #333;
+  padding-top: 1rem;
+}
