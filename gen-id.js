@@ -1,4 +1,3 @@
-// gen-id.js
 function makeid(num = 4) {
   let result = "";
   let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
