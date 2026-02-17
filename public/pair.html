@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RED X – Phone Pair</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="glitch">PHONE PAIR</h1>
+    <div class="subtitle">enter your number with country code</div>
+    <div class="card">
+      <div class="input-group">
+        <label>📞 WhatsApp number (e.g. 923001234567)</label>
+        <input type="text" id="number" placeholder="923001234567">
+      </div>
+      <button class="btn btn-block" id="pairBtn">GENERATE CODE</button>
+    </div>
+
+    <div id="result" class="hidden">
+      <div class="code-box" id="codeDisplay">XXXX-XXXX</div>
+      <div class="instructions">
+        <p>1. Open WhatsApp on your phone</p>
+        <p>2. Go to Settings → Linked Devices</p>
+        <p>3. Tap "Link a Device"</p>
+        <p>4. Select "Link with phone number instead"</p>
+        <p>5. Enter the code above</p>
+        <p>✅ Session ID will be sent automatically</p>
+      </div>
+    </div>
+
+    <div id="loading" class="hidden">
+      <p style="color:#0f0;">Connecting... please wait</p>
+    </div>
+
+    <div id="error" class="hidden" style="color:#f00;"></div>
+
+    <footer><a href="/" style="color:#f00;">← Back</a></footer>
+  </div>
+
+  <script>
+    const pairBtn = document.getElementById('pairBtn');
+    const numberInput = document.getElementById('number');
+    const resultDiv = document.getElementById('result');
+    const codeDisplay = document.getElementById('codeDisplay');
+    const loadingDiv = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+
+    pairBtn.addEventListener('click', async () => {
+      let number = numberInput.value.trim().replace(/\D/g, '');
+      if (!number || number.length < 10) {
+        alert('Enter a valid number with country code');
+        return;
+      }
+
+      resultDiv.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+      loadingDiv.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/pair?number=${number}`);
+        const data = await res.json();
+        loadingDiv.classList.add('hidden');
+
+        if (data.code) {
+          codeDisplay.innerText = data.code.match(/.{1,4}/g).join('-');
+          resultDiv.classList.remove('hidden');
+        } else {
+          errorDiv.innerText = data.error || 'Unknown error';
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (e) {
+        loadingDiv.classList.add('hidden');
+        errorDiv.innerText = 'Network error';
+        errorDiv.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
