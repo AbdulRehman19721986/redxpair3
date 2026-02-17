@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { makeid } = require('../gen-id');
 
-// Dynamically import the ESM module Baileys
+// Dynamically import Baileys (ESM)
 let makeWASocket, useMultiFileAuthState, delay;
 (async () => {
   const baileys = await import('@whiskeysockets/baileys');
@@ -25,17 +25,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Express error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
+// Health check
+app.get('/health', (req, res) => res.send('OK'));
 
 // ---------- PAIRING ENDPOINT ----------
 app.get('/pair', async (req, res) => {
-  // Ensure Baileys is loaded
   if (!makeWASocket) {
-    return res.status(503).json({ error: 'Baileys not initialized yet, try again' });
+    return res.status(503).json({ error: 'Service initializing, try again' });
   }
 
   const { number } = req.query;
@@ -60,7 +56,7 @@ app.get('/pair', async (req, res) => {
     let codeSent = false;
     sock.ev.on('connection.update', async (update) => {
       const { connection, lastDisconnect } = update;
-      
+
       if (!codeSent && !sock.authState.creds.registered) {
         try {
           const code = await sock.requestPairingCode(cleanNumber);
@@ -90,7 +86,6 @@ app.get('/pair', async (req, res) => {
     });
 
     sock.ev.on('creds.update', saveCreds);
-
   } catch (error) {
     console.error('Fatal error:', error);
     fs.rmSync(sessionPath, { recursive: true, force: true });
@@ -101,7 +96,7 @@ app.get('/pair', async (req, res) => {
 // ---------- QR ENDPOINT ----------
 app.get('/qr', async (req, res) => {
   if (!makeWASocket) {
-    return res.status(503).end('Baileys not initialized');
+    return res.status(503).end('Service initializing, try again');
   }
 
   const sessionId = makeid(6);
@@ -150,7 +145,6 @@ app.get('/qr', async (req, res) => {
     });
 
     sock.ev.on('creds.update', saveCreds);
-
   } catch (error) {
     console.error('Fatal error:', error);
     fs.rmSync(sessionPath, { recursive: true, force: true });
@@ -158,4 +152,5 @@ app.get('/qr', async (req, res) => {
   }
 });
 
+// Export the Express app
 module.exports = app;
