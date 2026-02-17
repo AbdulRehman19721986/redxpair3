@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RED X – QR Pair</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="glitch">QR PAIR</h1>
+    <div class="subtitle">scan with WhatsApp</div>
+    <div class="card">
+      <div class="qr-container">
+        <img id="qrImage" src="/api/qr" alt="QR Code" style="width:250px;height:250px;">
+      </div>
+      <div class="instructions">
+        <p>1. Open WhatsApp on your phone</p>
+        <p>2. Go to Settings → Linked Devices</p>
+        <p>3. Tap "Link a Device"</p>
+        <p>4. Scan this QR code</p>
+        <p>✅ Session ID will be sent automatically</p>
+      </div>
+      <button class="btn" onclick="location.reload()">REFRESH QR</button>
+    </div>
+    <footer><a href="/" style="color:#f00;">← Back</a></footer>
+  </div>
+</body>
+</html>
