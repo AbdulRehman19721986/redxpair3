@@ -1,10 +1,18 @@
 const express = require('express');
-const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
 const QRCode = require('qrcode');
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
 const { makeid } = require('../gen-id');
+
+// Dynamically import the ESM module Baileys
+let makeWASocket, useMultiFileAuthState, delay;
+(async () => {
+  const baileys = await import('@whiskeysockets/baileys');
+  makeWASocket = baileys.default;
+  useMultiFileAuthState = baileys.useMultiFileAuthState;
+  delay = baileys.delay;
+})();
 
 const app = express();
 
@@ -17,8 +25,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Pairing endpoint
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Express error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// ---------- PAIRING ENDPOINT ----------
 app.get('/pair', async (req, res) => {
+  // Ensure Baileys is loaded
+  if (!makeWASocket) {
+    return res.status(503).json({ error: 'Baileys not initialized yet, try again' });
+  }
+
   const { number } = req.query;
   if (!number) return res.status(400).json({ error: 'Phone number required' });
 
@@ -27,6 +46,7 @@ app.get('/pair', async (req, res) => {
 
   const sessionId = makeid(6);
   const sessionPath = path.join('/tmp', sessionId);
+  fs.mkdirSync(sessionPath, { recursive: true });
 
   try {
     const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
@@ -39,7 +59,7 @@ app.get('/pair', async (req, res) => {
 
     let codeSent = false;
     sock.ev.on('connection.update', async (update) => {
-      const { connection, lastDisconnect, qr } = update;
+      const { connection, lastDisconnect } = update;
       
       if (!codeSent && !sock.authState.creds.registered) {
         try {
@@ -48,6 +68,7 @@ app.get('/pair', async (req, res) => {
           if (!res.headersSent) res.json({ code });
         } catch (err) {
           console.error('Pairing code error:', err);
+          if (!res.headersSent) res.status(500).json({ error: 'Failed to get code' });
         }
       }
 
@@ -71,16 +92,21 @@ app.get('/pair', async (req, res) => {
     sock.ev.on('creds.update', saveCreds);
 
   } catch (error) {
-    console.error(error);
+    console.error('Fatal error:', error);
     fs.rmSync(sessionPath, { recursive: true, force: true });
     if (!res.headersSent) res.status(500).json({ error: 'Service unavailable' });
   }
 });
 
-// QR endpoint
+// ---------- QR ENDPOINT ----------
 app.get('/qr', async (req, res) => {
+  if (!makeWASocket) {
+    return res.status(503).end('Baileys not initialized');
+  }
+
   const sessionId = makeid(6);
   const sessionPath = path.join('/tmp', sessionId);
+  fs.mkdirSync(sessionPath, { recursive: true });
 
   try {
     const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
@@ -126,11 +152,10 @@ app.get('/qr', async (req, res) => {
     sock.ev.on('creds.update', saveCreds);
 
   } catch (error) {
-    console.error(error);
+    console.error('Fatal error:', error);
     fs.rmSync(sessionPath, { recursive: true, force: true });
     if (!res.headersSent) res.status(500).end();
   }
 });
 
-// Export the Express app as a serverless function
 module.exports = app;
