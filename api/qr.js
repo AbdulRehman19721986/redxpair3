@@ -1,10 +1,10 @@
 // api/qr.js
-const { makeid } = require('../gen-id');
-const { default: makeWASocket, useMultiFileAuthState, delay, Browsers } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
 const QRCode = require('qrcode');
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
+const { makeid } = require('../gen-id');
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,23 +16,27 @@ module.exports = async (req, res) => {
 
   try {
     const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
-    let qrSent = false;
 
     const sock = makeWASocket({
       auth: state,
       printQRInTerminal: false,
-      logger: pino({ level: 'fatal' }),
-      browser: Browsers.macOS('Desktop'),
+      logger: pino({ level: 'silent' }),
+      browser: ['Red X Pair', 'Chrome', '1.0.0']
     });
 
-    sock.ev.on('creds.update', saveCreds);
+    let qrSent = false;
+    sock.ev.on('connection.update', async (update) => {
+      const { connection, lastDisconnect, qr } = update;
 
-    sock.ev.on('connection.update', async (s) => {
-      const { connection, lastDisconnect, qr } = s;
       if (qr && !qrSent && !res.headersSent) {
         qrSent = true;
-        const qrImage = await QRCode.toBuffer(qr);
-        res.end(qrImage);
+        try {
+          const qrBuffer = await QRCode.toBuffer(qr);
+          res.end(qrBuffer);
+        } catch (err) {
+          console.error('QR buffer error:', err);
+          if (!res.headersSent) res.status(500).end();
+        }
       }
 
       if (connection === 'open') {
@@ -42,20 +46,22 @@ module.exports = async (req, res) => {
           const sessionData = fs.readFileSync(credsPath, 'utf-8');
           const base64 = Buffer.from(sessionData).toString('base64');
           const prefixed = `RED-X~${base64}`;
-
-          await sock.sendMessage(sock.user.id, { text: '✅ *Your RED X Session ID*' });
+          
+          await sock.sendMessage(sock.user.id, { text: '*✅ RED-X SESSION ID*' });
           await sock.sendMessage(sock.user.id, { text: prefixed });
         }
-
-        await delay(1000);
+        
         await sock.ws.close();
         fs.rmSync(sessionPath, { recursive: true, force: true });
       } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
-        console.log('QR connection closed');
+        console.log('QR connection closed unexpectedly');
       }
     });
-  } catch (err) {
-    console.error(err);
+
+    sock.ev.on('creds.update', saveCreds);
+
+  } catch (error) {
+    console.error('Fatal error:', error);
     fs.rmSync(sessionPath, { recursive: true, force: true });
     if (!res.headersSent) res.status(500).end();
   }
