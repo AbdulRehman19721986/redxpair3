@@ -1,12 +1,9 @@
 {
-  "name": "redx-pair-site",
+  "name": "netlify-pair-site",
   "version": "1.0.0",
-  "description": "WhatsApp Pair Site by Abdul Rehman Rajpoot",
-  "main": "api/index.js",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.2",
-    "express": "^4.18.2",
-    "pino": "^8.15.0",
-    "qrcode": "^1.5.3"
+    "qrcode": "^1.5.3",
+    "pino": "^8.15.0"
   }
 }
